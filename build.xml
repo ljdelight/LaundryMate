@@ -1,0 +1,83 @@
+<project name="LaundryMate" default="dist" basedir=".">
+	<description>
+        This is the build for the LaundryMate GUI. 
+    </description>
+
+	<property name="Name" value="LaundryMate"/>
+	
+	<property name="src.dir" location="src"/>
+	<property name="lib.dir" location="lib" />
+	<property name="build.dir" location="build"/>
+	<property name="dist.dir"  location="dist"/>
+	
+	<property name="run.path" location="lib/${os.arch}"/>
+	
+	
+	<fileset dir="${lib.dir}" id="dist.lib.jars">
+		<patternset>
+			<include name="**/*.jar"/>
+		</patternset>
+	</fileset>
+	<fileset dir="${dist.dir}" id="dist.dir.jars">
+		<patternset>
+			<include name="**/*.jar"/>
+		</patternset>
+	</fileset>
+
+
+	<path id="build.classpath">
+		<fileset refid="dist.lib.jars" />
+	</path>
+	<path id="run.classpath">
+		<fileset refid="dist.dir.jars" />
+	</path>
+	
+	<target name="init">
+		<!-- Create the time stamp -->
+		<tstamp/>
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${build.dir}"/>
+	</target>
+
+	<target name="compile" depends="init" description="compile the source " >
+		<!-- Compile the java code from ${src} into ${build} -->
+		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="true">
+			<classpath refid="build.classpath" />
+			<patternset includes="**/*.java"/>
+		</javac>
+	</target>
+
+
+	<target name="dist" depends="compile" description="generate the distribution" >
+
+		<mkdir dir="${dist.dir}"/>
+
+		<copy todir="${dist.dir}">
+			<fileset refid="dist.lib.jars"/>
+		</copy>
+
+		<pathconvert property="manifest.classpath" dirsep="/" pathsep=" " refid="dist.lib.jars">
+			<map from="${basedir}${file.separator}lib${file.separator}" to=""/>
+		</pathconvert>
+
+		<jar jarfile="${dist.dir}/LaundryMate.jar" basedir="${build.dir}">
+			<manifest>
+				<attribute name="Implementation-Title" value="${Name}"/>
+				<attribute name="Main-Class" value="LaundryMate.gui.ApplicationWindow" />
+				<attribute name="Class-Path" value="${manifest.classpath}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="run" depends="dist" description="Run the main GUI">
+		<java fork="true"  classname="LaundryMate.gui.ApplicationWindow">
+			<classpath refid="run.classpath" />
+			<jvmarg value="-Djava.library.path=${run.path}"/>
+		</java>
+	</target>
+	
+	<target name="clean" description="clean up" >
+		<delete dir="${build.dir}"/>
+		<delete dir="${dist.dir}"/>
+	</target>
+</project>

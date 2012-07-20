@@ -1,0 +1,2 @@
+These .cmd files need updated. The classpath changed, and the dll locations were modified. 
+
